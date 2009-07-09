@@ -79,8 +79,13 @@ class OpenVideoObject_Options {
 	 * @return array
 	 */
 	function getOptionsSupported() {
-		return array(gettext('Watermark default images') => array ('key' => 'openvideoobject_watermark_default_images', 'type' => 1,
-																	'desc' => gettext('Check to place watermark image on default thumbnail images.')));
+		return array(	gettext('Watermark default images') => array ('key' => 'openvideoobject_watermark_default_images', 'type' => 1,
+																	'desc' => gettext('Check to place watermark image on default thumbnail images.')),
+					 	gettext('Width') => array( 'key' => 'openvideoobject_width', 'type' => 0, 'desc' => gettext('Player width') ),
+					 	gettext('Height') => array( 'key' => 'openvideoobject_height', 'type' => 0, 'desc' => gettext('Player height') ),
+					 	gettext('Embed code visible') => array( 'key' => 'openvideoobject_embed_code_visible', 'type' => 1, 'desc' => gettext('Should embed code be displayed that visitors can easily copy?  Yes if selected') ),
+					 	gettext('Download link visible') => array( 'key' => 'openvideoobject_embed', 'type' => 1, 'desc' => gettext('Should a download link be displayed that visitors can click or copy?  Yes if selected') )
+		);
 	}
 	
 }
@@ -102,6 +107,7 @@ class OpenVideoObject extends _Image {
 			return NULL;
 		}
 		$this->objectsThumb = checkObjectsThumb($album->localpath, $filename);
+		$this->poster = getAlbumFolder(WEBPATH).$album->name.'/'.checkObjectsThumb(getAlbumFolder().$album->name, $filename);
 		// Check if the file exists.
 		if (!file_exists($this->localpath) || is_dir($this->localpath)) {
 			$this->exists = false;
@@ -172,7 +178,11 @@ class OpenVideoObject extends _Image {
 	 * @return string
 	 */
 	function getBody() {
-		return '<video src="'.$this->getFullImage().'" controls="controls"><applet code="com.fluendo.player.Cortado.class" archive="http://theora.org/cortado.jar"><param name="url" value="'.$this->getFullImage().'" /></applet></video>';
+		return '<video src="'.$this->getFullImage().'" controls="true" poster="'.$this->poster.'">
+					<applet code="com.fluendo.player.Cortado.class" archive="http://theora.org/cortado.jar">
+						<param name="url" value="'.$this->getFullImage().'" />
+					</applet>
+				</video>';
 	}
 
 	function getCustomImage($size, $width, $height, $cropw, $croph, $cropx, $cropy, $thumbStandin=false) {
@@ -218,4 +228,12 @@ class OpenVideoObject extends _Image {
 	}
 	
 }
+
+function isOpenVideo() {
+	global $_zp_current_image;
+	$result = false;
+	if( !is_null($_zp_current_image) && $_zp_current_image instanceof OpenVideoObject ) $result = true;
+	return $result;
+}
+
 ?>
